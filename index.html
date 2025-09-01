@@ -13,10 +13,13 @@
         <h1>Dashboard Financiero SOFIPOs y CETES</h1>
 
         <div class="input-section">
-            <label for="initialAmount">Monto Inicial a Invertir (MXN):</label>
-            <input type="number" id="initialAmount" value="10000" min="1" step="any">
+            <label for="initialAmount">Monto Inicial a Invertir 
+(MXN):</label>
+            <input type="number" id="initialAmount" value="10000" min="1" 
+step="any">
 
-            <label for="investmentPeriodDays">Plazo de Inversión (Días):</label>
+            <label for="investmentPeriodDays">Plazo de Inversión 
+(Días):</label>
             <select id="investmentPeriodDays">
                 <option value="28">1 Mes (28 días)</option>
                 <option value="91">3 Meses (91 días)</option>
@@ -24,42 +27,67 @@
                 <option value="365">1 Año (365 días)</option>
             </select>
 
-            <label for="selectedInstrument">Selecciona Instrumento:</label>
+            <label for="selectedInstrument">Selecciona 
+Instrumento:</label>
             <select id="selectedInstrument">
-                <optgroup label="SOFIPOs">
-                    <!-- SOFIPOs se cargarán dinámicamente aquí -->
-                </optgroup>
-                <optgroup label="CETES">
-                    <!-- CETES se cargarán dinámicamente aquí -->
-                </optgroup>
+                <!-- Opciones de SOFIPOs y CETES se cargarán dinámicamente 
+aquí con JavaScript -->
             </select>
 
-            <button onclick="calculatePerformance()">Calcular Rendimiento</button>
+            <button onclick="calculatePerformance()">Calcular 
+Rendimiento</button>
         </div>
 
         <div class="results-section">
             <h2>Simulación de Cálculo de Rendimiento</h2>
             <div id="simulationTableContainer">
-                <!-- La tabla de simulación se cargará dinámicamente aquí -->
+                <!-- La tabla de simulación se cargará dinámicamente aquí 
+-->
             </div>
 
             <div class="notes">
-                <p><strong>Nota sobre GAT Nominal y Real:</strong> El GAT Nominal es la ganancia anual total antes de impuestos y de la inflación. El GAT Real es la ganancia anual total después de descontar la inflación estimada. Los valores de GAT son proporcionados por las instituciones o calculados usando la tasa anual y una inflación estimada del <span id="inflationRate"></span>% para 2025. [15]</p>
-                <p><strong>Nota sobre ISR:</strong> La tasa de retención del ISR para inversiones en 2025 es del <span id="isrRate"></span>%. [2] La información disponible indica que esta retención se aplica sobre el capital invertido (principal), no sobre los intereses obtenidos. [2] Para este simulador, a fin de reflejar el "impuesto total del rendimiento", se ha calculado como un porcentaje del rendimiento bruto. Existe un monto exento de ISR equivalente a 5 UMAS anuales (<span id="isrExemptAmount"></span> MXN) en 2024, que se utiliza como referencia para 2025. [2] Se recomienda consultar a un especialista fiscal para casos específicos. El valor de la UDI utilizado para la protección es <span id="udiValue"></span> MXN. [1]</p>
+                <p><strong>Nota sobre GAT Nominal y Real:</strong> El GAT 
+Nominal es la ganancia anual total antes de impuestos y de la inflación. 
+El GAT Real es la ganancia anual total después de descontar la inflación 
+estimada. Los valores de GAT son proporcionados por las instituciones o 
+calculados usando la tasa anual y una inflación estimada del <span 
+id="inflationRate"></span>% para 2025. [15]</p>
+                <p><strong>Nota sobre ISR:</strong> La tasa de retención 
+del ISR para inversiones en 2025 es del <span id="isrRate"></span>%. [2] 
+La información disponible indica que esta retención se aplica sobre el 
+capital invertido (principal), no sobre los intereses obtenidos. [2] Para 
+este simulador, a fin de reflejar el "impuesto total del rendimiento", se 
+ha calculado como un porcentaje del rendimiento bruto. Existe un monto 
+exento de ISR equivalente a 5 UMAS anuales (<span 
+id="isrExemptAmount"></span> MXN) en 2024, que se utiliza como referencia 
+para 2025. [2] Se recomienda consultar a un especialista fiscal para casos 
+específicos. El valor de la UDI utilizado para la protección es <span 
+id="udiValue"></span> MXN. [1]</p>
                 <p class="protection-note">
                     <span id="protectionNote"></span>
                 </p>
             </div>
 
+            <h2>Ranking de Mejores Tasas de Rendimiento - Agosto 2025</h2>
+            <div id="rankingTableContainer">
+                <!-- La tabla de ranking se cargará dinámicamente aquí por 
+JavaScript -->
+            </div>
+
             <h2>Comparativa SOFIPO vs CETES</h2>
             <div id="comparisonTableContainer">
-                <!-- La tabla comparativa se cargará dinámicamente aquí -->
+                <!-- La tabla comparativa se cargará dinámicamente aquí 
+-->
             </div>
 
             <h2>Historial de Rendimiento Anual (2025)</h2>
             <div class="chart-container">
                 <canvas id="historicalPerformanceChart"></canvas>
-                <p class="chart-note">Nota: La gráfica muestra las tasas anuales brutas. Para la mayoría de las SOFIPOs, solo se disponen de tasas actuales, no un historial completo para 2025, por lo que se proyecta su tasa actual. [5, 6, 9, 11, 12, 13, 14, 16] Para CETES, se usan expectativas de Banxico y la tasa actual a 28 días. [1, 17]</p>
+                <p class="chart-note">Nota: La gráfica muestra las tasas 
+anuales brutas. Para la mayoría de las SOFIPOs, solo se disponen de tasas 
+actuales, no un historial completo para 2025, por lo que se proyecta su 
+tasa actual. [5, 6, 9, 11, 12, 13, 14, 16] Para CETES, se usan 
+expectativas de Banxico y la tasa actual a 28 días. [1, 17]</p>
             </div>
         </div>
     </div>
@@ -68,5 +96,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-gato > index.html
-

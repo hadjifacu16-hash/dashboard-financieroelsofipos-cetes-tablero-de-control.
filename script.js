@@ -1,26 +1,35 @@
 document.addEventListener('DOMContentLoaded', () => {
     populateInstrumentDropdown();
     displayGeneralNotes();
-    // Realiza un cálculo inicial al cargar la página con valores por defecto
-    calculatePerformance();
+    displayRankingTable(); // Mostrar el ranking al cargar la página
+    calculatePerformance(); // Realiza un cálculo inicial al cargar la página con valores por defecto
 });
 
 function populateInstrumentDropdown() {
     const selectedInstrument = document.getElementById('selectedInstrument');
-    const sofipoOptgroup = selectedInstrument.querySelector('optgroup[label="SOFIPOs"]');
-    const cetesOptgroup = selectedInstrument.querySelector('optgroup[label="CETES"]');
+    
+    // Limpiar opciones existentes para evitar duplicados si la función se llama varias veces
+    selectedInstrument.innerHTML = ''; 
 
+    // Crear y añadir el optgroup para SOFIPOs
+    const sofipoOptgroup = document.createElement('optgroup');
+    sofipoOptgroup.label = "SOFIPOs";
     appData.sofipos.forEach(sofipo => {
         const option = document.createElement('option');
         option.value = sofipo.name;
         option.textContent = sofipo.name;
         sofipoOptgroup.appendChild(option);
     });
+    selectedInstrument.appendChild(sofipoOptgroup);
 
+    // Crear y añadir el optgroup para CETES
+    const cetesOptgroup = document.createElement('optgroup');
+    cetesOptgroup.label = "CETES";
     const cetesOption = document.createElement('option');
     cetesOption.value = appData.cetes.name;
     cetesOption.textContent = appData.cetes.name;
     cetesOptgroup.appendChild(cetesOption);
+    selectedInstrument.appendChild(cetesOptgroup);
 }
 
 function displayGeneralNotes() {
@@ -60,58 +69,49 @@ function calculatePerformance() {
     let gatReal = instrumentData.gat_real;
 
     if (selectedInstrumentName === appData.cetes.name && instrumentData.rates_by_term) {
-        // Para CETES, busca la tasa más cercana al plazo seleccionado
         const closestTerm = Object.keys(instrumentData.rates_by_term)
                                .map(Number)
                                .reduce((prev, curr) => (Math.abs(curr - investmentPeriodDays) < Math.abs(prev - investmentPeriodDays) ? curr : prev));
         annualRate = instrumentData.rates_by_term[closestTerm];
-        // Para CETES, si no hay GAT explícito, se usa la tasa anual como GAT Nominal
         gatNominal = gatNominal || annualRate;
     } else if (isSofipo && instrumentData.name === "Klar" && instrumentData.terms.includes("flexible")) {
-        // Klar flexible, use Klar Plus rate if available, otherwise standard
-        // This is a simplification, ideally we'd have a way to select Klar Plus
-        annualRate = 0.085; // Example: Assuming Klar Plus (highest fixed rate) for calculation
+        annualRate = 0.085; 
     } else if (isSofipo && instrumentData.name === "Nu bank" && instrumentData.notes.includes("Cajita Turbo")) {
-        annualRate = 0.15; // Use Cajita Turbo rate
+        annualRate = 0.15; 
     }
 
 
-    // Estimar GAT Nominal si no está proporcionado (usa la tasa anual)
     gatNominal = gatNominal || annualRate;
 
-    // Estimar GAT Real si no está proporcionado
     if (gatReal === null) {
         gatReal = ((1 + gatNominal) / (1 + appData.general_info.estimated_annual_inflation_2025)) - 1;
     }
 
-    // Cálculos de Rendimiento
-    const dailyRate = annualRate / 365;
-    const monthlyRate = annualRate / 12;
     const investmentPeriodYears = investmentPeriodDays / 365;
 
     // Rendimientos Brutos
+    const totalGrossYieldFactor = Math.pow(1 + annualRate, investmentPeriodYears);
+    const grossYieldAtTerm = initialAmount * (totalGrossYieldFactor - 1);
+    
     const grossAnnualYield = initialAmount * annualRate;
-    const grossMonthlyYield = (initialAmount * (Math.pow(1 + annualRate, 1/12) - 1)) ; // Compounded monthly approximation
-    const grossDailyYield = (initialAmount * (Math.pow(1 + annualRate, 1/365) - 1)) ; // Compounded daily approximation
-    const grossYieldAtTerm = initialAmount * (Math.pow(1 + annualRate, investmentPeriodYears) - 1); // Rendimiento total compuesto al plazo
+    const effectiveMonthlyRate = Math.pow(1 + annualRate, 1/12) - 1;
+    const grossMonthlyYield = initialAmount * effectiveMonthlyRate;
+    const effectiveDailyRate = Math.pow(1 + annualRate, 1/365) - 1;
+    const grossDailyYield = initialAmount * effectiveDailyRate;
+
 
     // Cálculo de ISR (simplificado según nota)
     const isrAnnualRate = appData.general_info.isr_retention_rate_2025;
-    const isrDailyRate = isrAnnualRate / 365;
+    const isrDailyRate = isrAnnualRate / 365; 
 
     let totalISRTax = 0;
-    // La exención de ISR en SOFIPOs es para intereses ganados hasta 5 UMAS.
-    // La retención del 0.5% en inversiones se aplica sobre el capital (principal)
-    // Para cumplir con "impuesto total del rendimiento", lo calculamos sobre el rendimiento bruto aquí.
-    const isrExemptAmountUDIS = 5 * (appData.general_info.uma_value_2024_annual_mxn / (365/12)) ; // UMA mensual aproximada para comparar con rendimientos
+    const annualExemptMXN = appData.general_info.isr_exempt_amount_2024_mxn; 
 
-    // Simplificación: Si el rendimiento bruto anual excede el equivalente a 5 UMAS anuales, se aplica el ISR al rendimiento bruto.
-    // Esto es para cumplir el prompt de "impuesto total del rendimiento", pero reitera la ambigüedad.
-    if (grossYieldAtTerm > (appData.general_info.isr_exempt_amount_2024_mxn * investmentPeriodYears) ) { // Check against annual exempt amount pro-rated for the term
-         totalISRTax = grossYieldAtTerm * isrAnnualRate;
-    } else if (initialAmount > appData.general_info.isr_exempt_amount_2024_mxn) {
-        // If the principal is above the exempt amount, but the yield isn't necessarily, we still apply the 0.5% rate on yield
-        // This handles the "retention on principal" aspect by applying it as tax on yield if the principal is large.
+    if (isSofipo) {
+        if (grossYieldAtTerm > annualExemptMXN * investmentPeriodYears) { 
+            totalISRTax = grossYieldAtTerm * isrAnnualRate; 
+        }
+    } else {
         totalISRTax = grossYieldAtTerm * isrAnnualRate;
     }
 
@@ -119,28 +119,31 @@ function calculatePerformance() {
     const netYieldAtTerm = grossYieldAtTerm - totalISRTax;
     const finalAmount = initialAmount + netYieldAtTerm;
 
-    // Mostrar tabla de simulación
     displaySimulationTable(initialAmount, investmentPeriodDays, instrumentData, annualRate, grossAnnualYield, grossMonthlyYield, grossDailyYield, grossYieldAtTerm, gatNominal, gatReal, isrAnnualRate, isrDailyRate, totalISRTax, netYieldAtTerm, finalAmount);
-
-    // Mostrar tabla comparativa
     displayComparisonTable(instrumentData, annualRate, gatNominal, gatReal);
-
-    // Actualizar nota de protección
-    const protectionNoteElement = document.getElementById('protectionNote');
-    if (instrumentData.protection_notes) {
-        protectionNoteElement.innerHTML = `<strong>Protección:</strong> ${instrumentData.protection_notes}.`;
-    } else if (instrumentData.protection_udis) {
-        protectionNoteElement.innerHTML = `<strong>Protección:</strong> Hasta ${instrumentData.protection_udis.toLocaleString()} UDIS (${instrumentData.protection_mxn.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}) por persona.`;
-    } else {
-        protectionNoteElement.textContent = 'Información de protección no disponible.';
-    }
-
-    // Actualizar gráfica de historial
     updateHistoricalChart(instrumentData);
 }
 
 function displaySimulationTable(initialAmount, periodDays, instrument, annualRate, grossAnnualYield, grossMonthlyYield, grossDailyYield, grossYieldAtTerm, gatNominal, gatReal, isrAnnualRate, isrDailyRate, totalISRTax, netYieldAtTerm, finalAmount) {
     const tableContainer = document.getElementById('simulationTableContainer');
+
+    let officialUrlRow = '';
+    if (instrument.official_url) {
+        officialUrlRow = `<tr><td>Página Oficial</td><td><a href="${instrument.official_url}" target="_blank">${instrument.name}</a></td></tr>`;
+    } else if (instrument.name === appData.cetes.name) {
+        officialUrlRow = `<tr><td>Página Oficial</td><td><a href="https://www.cetesdirecto.com/" target="_blank">CetesDirecto.com</a></td></tr>`;
+    }
+    // Actualizar nota de protección (movido aquí para asegurar que se actualice con cada cálculo)
+    const protectionNoteElement = document.getElementById('protectionNote');
+    if (instrument.protection_notes) {
+        protectionNoteElement.innerHTML = `<strong>Protección:</strong> ${instrument.protection_notes}.`;
+    } else if (instrument.protection_udis) {
+        protectionNoteElement.innerHTML = `<strong>Protección:</strong> Hasta ${instrument.protection_udis.toLocaleString()} UDIS (${instrument.protection_mxn.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}) por persona.`;
+    } else {
+        protectionNoteElement.textContent = 'Información de protección no disponible.';
+    }
+
+
     tableContainer.innerHTML = `
         <table>
             <thead>
@@ -154,6 +157,7 @@ function displaySimulationTable(initialAmount, periodDays, instrument, annualRat
                 <tr><td>Plazo de Inversión</td><td>${periodDays} días</td></tr>
                 <tr><td>Tasa Anual (Bruta)</td><td>${(annualRate * 100).toFixed(2)}%</td></tr>
                 <tr><td>Protección</td><td>${instrument.protection_udis ? instrument.protection_udis.toLocaleString() + ' UDIS (' + instrument.protection_mxn.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }) + ')' : instrument.protection_notes || 'N/A'}</td></tr>
+                ${officialUrlRow}
                 <tr class="separator"><td colspan="2"></td></tr>
                 <tr><th colspan="2">Rendimiento Bruto (Antes de Impuestos)</th></tr>
                 <tr><td>Rendimiento Anual Bruto</td><td>${grossAnnualYield.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</td></tr>
@@ -190,7 +194,7 @@ function displayComparisonTable(selectedInstrument, selectedAnnualRate, selected
             gat_real: selectedGATReal,
             protection: appData.cetes.protection_notes
         };
-        // Encuentra una SOFIPO representativa para comparar, por ejemplo, la primera con una tasa alta
+        // Encuentra una SOFIPO representativa para comparar, por ejemplo, la de mayor tasa anual
         const representativeSofipo = appData.sofipos.reduce((max, sofipo) => (sofipo.annual_rate > max.annual_rate ? sofipo : max), appData.sofipos[0]);
         sofipoData = {
             name: representativeSofipo.name,
@@ -254,6 +258,88 @@ function displayComparisonTable(selectedInstrument, selectedAnnualRate, selected
     `;
 }
 
+function displayRankingTable() {
+    const tableContainer = document.getElementById('rankingTableContainer');
+    
+    const allInstruments = [...appData.sofipos]; 
+    const cetesForRanking = {
+        name: appData.cetes.name,
+        annual_rate: appData.cetes.rates_by_term["364"],
+        gat_nominal: appData.cetes.rates_by_term["364"], 
+        gat_real: ((1 + appData.cetes.rates_by_term["364"]) / (1 + appData.general_info.estimated_annual_inflation_2025)) - 1,
+        protection_udis: null, 
+        protection_mxn: null,
+        official_url: "https://www.cetesdirecto.com/"
+    };
+    allInstruments.push(cetesForRanking);
+
+    const rankedInstruments = allInstruments.map(inst => {
+        let gatNominalCalculated = inst.gat_nominal || inst.annual_rate;
+        let gatRealCalculated = inst.gat_real || ((1 + gatNominalCalculated) / (1 + appData.general_info.estimated_annual_inflation_2025)) - 1;
+        
+        return {
+            name: inst.name,
+            annual_rate: inst.annual_rate,
+            gat_nominal: gatNominalCalculated,
+            gat_real: gatRealCalculated,
+            protection_udis: inst.protection_udis,
+            protection_mxn: inst.protection_mxn,
+            official_url: inst.official_url || null
+        };
+    });
+
+    rankedInstruments.sort((a, b) => b.gat_real - a.gat_real);
+
+    let tableRows = '';
+    rankedInstruments.forEach((inst, index) => {
+        let protectionInfo;
+        if (inst.name === 'CETES') {
+            protectionInfo = 'Respaldo del Gobierno Federal';
+        } else if (inst.protection_udis) {
+            protectionInfo = `${inst.protection_udis.toLocaleString()} UDIS`;
+        } else if (inst.protection_mxn) {
+            protectionInfo = inst.protection_mxn.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+        } else {
+            protectionInfo = 'N/A';
+        }
+
+        let nameCell = inst.name;
+        if (inst.official_url) {
+            nameCell = `<a href="${inst.official_url}" target="_blank">${inst.name}</a>`;
+        }
+
+        tableRows += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${nameCell}</td>
+                <td>${(inst.annual_rate * 100).toFixed(2)}%</td>
+                <td>${(inst.gat_nominal * 100).toFixed(2)}%</td>
+                <td>${(inst.gat_real * 100).toFixed(2)}%</td>
+                <td>${protectionInfo}</td>
+            </tr>
+        `;
+    });
+
+    tableContainer.innerHTML = `
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Instrumento</th>
+                    <th>Tasa Anual (Bruta)</th>
+                    <th>GAT Nominal</th>
+                    <th>GAT Real</th>
+                    <th>Protección</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${tableRows}
+            </tbody>
+        </table>
+    `;
+}
+
+
 let historicalChart;
 
 function updateHistoricalChart(selectedInstrument) {
@@ -263,13 +349,11 @@ function updateHistoricalChart(selectedInstrument) {
     let selectedInstrumentRates = [];
     let cetesHistoricalRates = [];
 
-    // Para el instrumento seleccionado, proyectamos su tasa anual actual a lo largo del año
     for (let i = 0; i < labels.length; i++) {
         selectedInstrumentRates.push(selectedInstrument.annual_rate * 100);
     }
 
-    // Para CETES, usamos las expectativas de 28 días de Banxico para meses anteriores y la tasa actual para agosto
-    for (let i = 0; i < labels.length -1 ; i++) { // Ene-Jul
+    for (let i = 0; i < labels.length -1 ; i++) { 
         const monthKey = labels[i].substring(0, 3);
         if (appData.cetes_expectations_28day_2025[monthKey]) {
             cetesHistoricalRates.push(appData.cetes_expectations_28day_2025[monthKey] * 100);
@@ -277,11 +361,9 @@ function updateHistoricalChart(selectedInstrument) {
             cetesHistoricalRates.push(null);
         }
     }
-    // Agrega la tasa actual de CETES 28 días para el mes actual (Agosto)
     cetesHistoricalRates.push(appData.cetes.rates_by_term["28"] * 100);
 
 
-    // Destruye el gráfico existente si lo hay
     if (historicalChart) {
         historicalChart.destroy();
     }

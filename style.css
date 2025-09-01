@@ -96,10 +96,13 @@ th {
     background-color: #eaf6ff;
     color: #004085;
     font-weight: 600;
+    text-transform: uppercase; /* Hace el texto de los encabezados más prominente */
+    font-size: 0.9em;
 }
 
 td {
     color: #333;
+    font-size: 0.95em;
 }
 
 tr:nth-child(even) {
@@ -145,4 +148,14 @@ tr.separator td {
     color: #666;
     text-align: center;
     margin-top: 15px;
+}
+a {
+    color: #007bff; /* Color azul para enlaces */
+    text-decoration: none; /* Sin subrayado por defecto */
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: #0056b3; /* Un azul más oscuro al pasar el mouse */
+    text-decoration: underline; /* Subrayado al pasar el mouse */
 }

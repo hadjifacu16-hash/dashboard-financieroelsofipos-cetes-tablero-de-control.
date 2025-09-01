@@ -8,7 +8,8 @@ const appData = {
             "protection_udis": 25000,
             "protection_mxn": 212783.4, // 25,000 UDIS * 8.511336
             "terms": ["flexible"],
-            "notes": "Rendimientos diarios. Tasa del 15% anual."
+            "notes": "Rendimientos diarios. Tasa del 15% anual.",
+            "official_url": "https://www.didi-rider.com/es-MX/cuenta/"
         },
         {
             "name": "Stori",
@@ -18,7 +19,8 @@ const appData = {
             "protection_udis": 25000,
             "protection_mxn": 212783.4, // 25,000 UDIS * 8.511336
             "terms": ["flexible", 180, 360],
-            "notes": "GAT Nominal 8.00% (Sin plazo)."
+            "notes": "GAT Nominal 8.00% (Sin plazo).",
+            "official_url": "https://storicard.com/stori-cuenta/"
         },
         {
             "name": "Klar",
@@ -28,7 +30,8 @@ const appData = {
             "protection_udis": 25000,
             "protection_mxn": 212783.4, // 25,000 UDIS * 8.511336
             "terms": ["flexible", 7, 30, 90, 180, 365],
-            "notes": "Hasta 8.5% anual con Klar Plus en inversión fija a 365 días."
+            "notes": "Hasta 8.5% anual con Klar Plus en inversión fija a 365 días.",
+            "official_url": "https://www.klar.mx/"
         },
         {
             "name": "Nu bank",
@@ -38,7 +41,8 @@ const appData = {
             "protection_udis": 25000,
             "protection_mxn": 212783.4, // 25,000 UDIS * 8.511336
             "terms": ["flexible", 7, 28, 90, 180],
-            "notes": "Cajita Turbo 15% anual."
+            "notes": "Cajita Turbo 15% anual.",
+            "official_url": "https://nu.com.mx/"
         },
         {
             "name": "Mercado Pago",
@@ -48,7 +52,8 @@ const appData = {
             "protection_udis": 25000, // Asumido ya que está regulado y no especifica otro
             "protection_mxn": 212783.4, // 25,000 UDIS * 8.511336
             "terms": ["flexible"],
-            "notes": "Hasta 14% anual. "
+            "notes": "Hasta 14% anual. ",
+            "official_url": "https://www.mercadopago.com.mx/cuenta-digital"
         },
         {
             "name": "Finsus",
@@ -58,7 +63,8 @@ const appData = {
             "protection_udis": 25000,
             "protection_mxn": 212783.4, // 25,000 UDIS * 8.511336
             "terms": [7, 30, 90, 180, 360, 600, 720, 1080, 1440, 1800],
-            "notes": "Hasta 10.09% anual en inversiones a plazo."
+            "notes": "Hasta 10.09% anual en inversiones a plazo.",
+            "official_url": "https://finsus.mx/"
         },
         {
             "name": "Supertasas",
@@ -68,7 +74,8 @@ const appData = {
             "protection_udis": 25000,
             "protection_mxn": 212783.4, // 25,000 UDIS * 8.511336
             "terms": ["flexible", 364],
-            "notes": "Rendimiento potencial máximo anual hasta 9.50%."
+            "notes": "Rendimiento potencial máximo anual hasta 9.50%.",
+            "official_url": "https://supertasas.com/"
         },
         {
             "name": "Kubo Financiero",
@@ -78,7 +85,8 @@ const appData = {
             "protection_udis": 25000,
             "protection_mxn": 212783.4, // 25,000 UDIS * 8.511336
             "terms": [28, 90, 180, 365, 547],
-            "notes": "Hasta 11.50% anual. GATs proporcionados para plazo de 365 días."
+            "notes": "Hasta 11.50% anual. GATs proporcionados para plazo de 365 días.",
+            "official_url": "https://www.kubofinanciero.com/"
         },
         {
             "name": "Ualá",
@@ -88,7 +96,8 @@ const appData = {
             "protection_udis": 400000,
             "protection_mxn": 3404534.4, // 400,000 UDIS * 8.511336
             "terms": ["flexible"],
-            "notes": "Tasa Plus 16.00% anual, protegido por IPAB (400,000 UDIS)."
+            "notes": "Tasa Plus 16.00% anual, protegido por IPAB (400,000 UDIS).",
+            "official_url": "https://www.uala.mx/"
         }
     ],
     "cetes": {
